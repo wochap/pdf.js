@@ -171,8 +171,11 @@ function getViewerConfiguration() {
   };
 }
 
-function webViewerLoad() {
+function webViewerLoad(event, pdfBase64) {
   let config = getViewerConfiguration();
+  if (pdfBase64) {
+    config.pdfBase64 = pdfBase64;
+  }
   if (typeof PDFJSDev === 'undefined' || !PDFJSDev.test('PRODUCTION')) {
     Promise.all([
       SystemJS.import('pdfjs-web/app'),
@@ -188,9 +191,23 @@ function webViewerLoad() {
   }
 }
 
-if (document.readyState === 'interactive' ||
-    document.readyState === 'complete') {
-  webViewerLoad();
+if (location.search.indexOf('hasPdfBase64') >= 0) { 
+  // fix font issue
+  PDFJS.disableFontFace = true;
+
+  // wait for pdfBase64
+  window.addEventListener('message', function (event) { 
+    // TODO: check event.origin 
+
+    var pdfBase64 = JSON.parse(event.data); 
+
+    webViewerLoad(undefined, pdfBase64);
+  });
 } else {
-  document.addEventListener('DOMContentLoaded', webViewerLoad, true);
+  if (document.readyState === 'interactive' ||
+    document.readyState === 'complete') {
+    webViewerLoad(); 
+  } else { 
+    document.addEventListener('DOMContentLoaded', webViewerLoad, true);
+  } 
 }

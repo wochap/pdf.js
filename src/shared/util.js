@@ -17,10 +17,10 @@ import './compatibility';
 import { ReadableStream } from './streams_polyfill';
 
 var globalScope =
-  (typeof window !== 'undefined' && window.Math === Math) ? window :
-  // eslint-disable-next-line no-undef
-  (typeof global !== 'undefined' && global.Math === Math) ? global :
-  (typeof self !== 'undefined' && self.Math === Math) ? self : this;
+(typeof window !== 'undefined' && window.Math === Math) ? window :
+// eslint-disable-next-line no-undef
+(typeof global !== 'undefined' && global.Math === Math) ? global :
+(typeof self !== 'undefined' && self.Math === Math) ? self : this;
 
 var FONT_IDENTITY_MATRIX = [0.001, 0, 0, 0.001, 0, 0];
 
@@ -1209,10 +1209,12 @@ var createObjectURL = (function createObjectURLClosure() {
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
   return function createObjectURL(data, contentType, forceDataSchema = false) {
-    if (!forceDataSchema && URL.createObjectURL) {
-      var blob = createBlob(data, contentType);
-      return URL.createObjectURL(blob);
-    }
+    // blob images doesn't work well 
+    // on file scheme
+    // if (!forceDataSchema && URL.createObjectURL) {
+    //   var blob = createBlob(data, contentType);
+    //   return URL.createObjectURL(blob);
+    // }
 
     var buffer = 'data:' + contentType + ';base64,';
     for (var i = 0, ii = data.length; i < ii; i += 3) {

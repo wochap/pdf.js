@@ -1596,14 +1596,18 @@ function webViewerInitialized() {
     PDFViewerApplication.pdfSidebar.toggle();
   });
 
-  Promise.all(waitForBeforeOpening).then(function () {
-    webViewerOpenFileViaURL(file);
-  }).catch(function (reason) {
-    PDFViewerApplication.l10n.get('loading_error', null,
-        'An error occurred while opening.').then((msg) => {
-      PDFViewerApplication.error(msg, reason);
+  if (appConfig.pdfBase64) {
+    webViewerOpenFileViaURL(';base64,' + appConfig.pdfBase64);
+  } else {
+    Promise.all(waitForBeforeOpening).then(function () {
+      webViewerOpenFileViaURL(file);
+    }).catch(function (reason) {
+      PDFViewerApplication.l10n.get('loading_error', null,
+          'An error occurred while opening.').then((msg) => {
+        PDFViewerApplication.error(msg, reason);
+      });
     });
-  });
+  } 
 }
 
 let webViewerOpenFileViaURL;
@@ -1629,6 +1633,25 @@ if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
         });
       }
       return;
+    }
+
+    if (file && file.lastIndexOf(';base64,', 0) === 0) {
+      // remove `;base64,` string
+      file = file.substring(8);
+      // TODO: get filename from file
+      PDFViewerApplication.setTitleUsingUrl('Pdf file title');
+
+      function base64ToArrayBuffer(base64) {
+        var binary_string =  window.atob(base64);
+        var len = binary_string.length;
+        var bytes = new Uint8Array( len );
+        for (var i = 0; i < len; i++)        {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes.buffer;
+      }
+
+      return PDFViewerApplication.open(base64ToArrayBuffer(file));
     }
 
     if (file) {

@@ -101,6 +101,10 @@ document.webL10n = (function(window, document, undefined) {
   }
 
   function xhrLoadText(url, onSuccess, onFailure) {
+    if (!(window.location.protocol.indexOf('http') >= 0)) {
+      return onFailure(new Error('XHR doesn\'t works on file protocol'));
+    }
+
     onSuccess = onSuccess || function _onSuccess(data) {};
     onFailure = onFailure || function _onFailure() {};
 
